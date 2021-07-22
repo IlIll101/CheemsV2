@@ -1,4 +1,3 @@
-discord.ext
 discord
 os
 pandas
