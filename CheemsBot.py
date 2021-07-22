@@ -36,6 +36,7 @@ async def leaderboardupdate():
                
 @bot.event
 async def on_ready():
+    print("Bot is ready!")
     leaderboardupdate.start()
     await bot.change_presence(activity=discord.Game(name='Prefix is "!"'))
 
