@@ -1,5 +1,4 @@
 discord
-os
 pandas
 datetime
 json
