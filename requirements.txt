@@ -1,7 +1,6 @@
 discord
 pandas
 datetime
-json
 matplotlib
 requests_html
 yahoo_fin
