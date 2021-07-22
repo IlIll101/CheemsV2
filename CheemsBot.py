@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 import discord, os, pandas, datetime as DT, json
 
 
-BotToken = 'ODUyMTg2ODQ4MjYzNDA1NjM4.YMDK2Q.F28VKZ7jGhGnYK1mUnQpPBqWvto'
+BotToken = os.environ['DISCORD_TOKEN']
 bot = commands.AutoShardedBot(shard_count=10, command_prefix = '!')
 
 @tasks.loop(seconds=10800)
