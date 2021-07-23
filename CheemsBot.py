@@ -75,8 +75,8 @@ async def backupsaves():
 @bot.event
 async def on_ready():
     print("Bot is ready!")
-    leaderboardupdate.start()
     backupsaves.start()
+    leaderboardupdate.start()
     await bot.change_presence(activity=discord.Game(name='Prefix is "!"'))
     
 @bot.command()
