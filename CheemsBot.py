@@ -70,7 +70,7 @@ async def backupsaves():
 
     embed.set_footer(text="Time of backup")
     
-    await bot.get_channel(os.environ['BACKUP_CHANNEL_ID']).send(embed=embed)
+    await bot.get_channel(int(os.environ['BACKUP_CHANNEL_ID'])).send(embed=embed)
                
 @bot.event
 async def on_ready():
