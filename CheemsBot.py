@@ -2,11 +2,13 @@ from discord.ext import tasks, commands
 from yahoo_fin.stock_info import *
 from requests_html import HTMLSession
 from matplotlib import pyplot as plt
+from github import Github
 import discord, os, pandas, datetime as DT, json
 
 
 BotToken = os.environ['DISCORD_TOKEN']
-bot = commands.AutoShardedBot(shard_count=10, command_prefix = '!')
+bot = commands.AutoShardedBot(shard_count=10, command_prefix = '!', help_command=None)
+bot.launch_time = DT.datetime.utcnow()
 
 @tasks.loop(seconds=10800)
 async def leaderboardupdate():
@@ -33,13 +35,151 @@ async def leaderboardupdate():
 
     with open("LeaderBoard", "w") as path:
         json.dump(leaderboardsave, path)
+        
+@tasks.loop(seconds=1800)
+async def backupsaves():
+    g = Github("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")
+    repo = g.search_repositories("IlIll101/CheemsV2")[0]
+    userdatalist = os.listdir('StockUserData/')
+    for y in userdatalist:
+        profile = None
+        x = str(y)
+        try:
+            contents = repo.get_contents("StockUserData/" + x)
+            repo.delete_file(contents.path, "SaveUpdating", contents.sha)
+            with open("StockUserData/" +  x, "r") as path:
+                profile = json.load(path)
+            repo.create_file("StockUserData/" + x, "SaveUpdating", str(profile))
+        except:
+            with open("StockUserData/" +  x, "r") as path:
+                profile = json.load(path)
+            repo.create_file("StockUserData/" + x, "SaveUpdating", str(profile))
+            
+    backupreport = {'FilesBacked' : len(userdatalist),
+                    'TimeOfSave' : str((DT.datetime.utcnow()).strftime('%Y-%m-%d %H:%M:%S'))}
+
+    with open("BackUpReport", "w") as path:
+        json.dump(backupreport, path)
+
+    embed = discord.Embed(title="Backup succsessful!",
+                          timestamp=DT.datetime.strptime(backupreport.get('TimeOfSave'), '%Y-%m-%d %H:%M:%S'),
+                          color=discord.Color.from_rgb(135, 206, 235))
+    embed.add_field(name="Files saved:",
+                    value=str(backupreport.get('FilesBacked')),
+                    inline=False)
+
+    embed.set_footer(text="Time of backup")
+    
+    await bot.get_channel(os.environ['BACKUP_CHANNEL_ID']).send(embed=embed)
                
 @bot.event
 async def on_ready():
     print("Bot is ready!")
     leaderboardupdate.start()
+    backupsaves.start()
     await bot.change_presence(activity=discord.Game(name='Prefix is "!"'))
+    
+@bot.command()
+@commands.cooldown(1, 5.0, commands.BucketType.user)
+async def uptime(ctx):
+    commandauthorid = ctx.message.author.id
+    delta_uptime = DT.datetime.utcnow() - bot.launch_time
+    hours, remainder = divmod(int(delta_uptime.total_seconds()), 3600)
+    minutes, seconds = divmod(remainder, 60)
+    days, hours = divmod(hours, 24)
+    embed = discord.Embed(title="Online for " + f"{days}d, {hours}h, {minutes}m",
+                          color=discord.Color.from_rgb(135, 206, 235))
+    
+    await ctx.send('<@' + str(commandauthorid) + '>', embed=embed)
 
+@uptime.error
+async def cooldownerror(ctx, error):
+    commandauthorid = ctx.message.author.id
+    if isinstance(error, commands.CommandOnCooldown):
+        embed = discord.Embed(title='Request Denied',
+                              description='**There is a cooldown of 5 seconds on this command**',
+                              color=discord.Color.red())
+
+        await ctx.send('<@' + str(commandauthorid) + '>', embed=embed)
+        
+@bot.command()
+@commands.cooldown(1, 5.0, commands.BucketType.user)
+async def help(ctx):
+    commandauthorid = ctx.message.author.id
+    embed = discord.Embed(title="Commands", 
+                          color=discord.Color.from_rgb(135, 206, 235))
+    embed.add_field(name="Stocks",
+                    value="**!myprofile** - displays your stock profile/creates a profile\n" +
+                    "**!buy <ticker> <amount>** - buys a share of a specific stock\n" +
+                    "**!sell <ticker> <amount>** - sells a share of a specific stock that you own\n" +
+                    "**!stockprice <ticker>** - displays the price and stats about a stock\n" +
+                    "**!stockearnings <ticker>** - displays the earnings of a stock\n" +
+                    "**!topgainers** - displays top gainers for the day\n" +
+                    "**!toplosers** - displays top losers for the day")
+    embed.add_field(name="Misc",
+                    value="**!servercount** - displays the server count\n" +
+                    "**!leaderboard** - displays the leaderboard (updated every hour)\n" +
+                    "**!uptime** - displays the uptime of the bot\n" +
+                    "**!backupstatus** - displays info on the last save backup")
+    
+    await ctx.send('<@' + str(commandauthorid) + '>', embed=embed)
+                    
+@help.error
+async def cooldownerror(ctx, error):
+    commandauthorid = ctx.message.author.id
+    if isinstance(error, commands.CommandOnCooldown):
+        embed = discord.Embed(title='Request Denied',
+                              description='**There is a cooldown of 5 seconds on this command**',
+                              color=discord.Color.red())
+
+        await ctx.send('<@' + str(commandauthorid) + '>', embed=embed)
+
+@bot.command()
+@commands.cooldown(1, 5.0, commands.BucketType.user)
+async def servercount(ctx):
+    commandauthorid = ctx.message.author.id
+    embed = discord.Embed(title=str(len(bot.guilds)) + " servers",
+                          color=discord.Color.from_rgb(135, 206, 235))
+    
+    await ctx.send('<@' + str(commandauthorid) + '>', embed=embed)
+
+@servercount.error
+async def cooldownerror(ctx, error):
+    commandauthorid = ctx.message.author.id
+    if isinstance(error, commands.CommandOnCooldown):
+        embed = discord.Embed(title='Request Denied',
+                              description='**There is a cooldown of 5 seconds on this command**',
+                              color=discord.Color.red())
+
+        await ctx.send('<@' + str(commandauthorid) + '>', embed=embed)
+    
+@bot.command()
+@commands.cooldown(1, 5.0, commands.BucketType.user)
+async def backupstatus(ctx):
+    commandauthorid = ctx.message.author.id
+    backupreport = None
+    with open("BackUpReport", "r") as path:
+        backupreport = json.load(path)
+
+    embed = discord.Embed(title="Backup info",
+                          timestamp=DT.datetime.strptime(backupreport.get('TimeOfSave'), '%Y-%m-%d %H:%M:%S'),
+                          color=discord.Color.from_rgb(135, 206, 235))
+    embed.add_field(name="Files saved:",
+                    value=str(backupreport.get('FilesBacked')),
+                    inline=False)
+    embed.set_footer(text="Time of backup")
+    await ctx.send('<@' + str(commandauthorid) + '>', embed=embed)
+
+@backupstatus.error
+async def cooldownerror(ctx, error):
+    commandauthorid = ctx.message.author.id
+    if isinstance(error, commands.CommandOnCooldown):
+        embed = discord.Embed(title='Request Denied',
+                              description='**There is a cooldown of 5 seconds on this command**',
+                              color=discord.Color.red())
+
+        await ctx.send('<@' + str(commandauthorid) + '>', embed=embed)
+        
 @bot.command()
 @commands.cooldown(1, 5.0, commands.BucketType.user)
 async def leaderboard(ctx):
