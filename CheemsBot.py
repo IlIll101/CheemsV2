@@ -49,11 +49,15 @@ async def backupsaves():
             repo.delete_file(contents.path, "SaveUpdating", contents.sha)
             with open("StockUserData/" +  x, "r") as path:
                 profile = json.load(path)
-            repo.create_file("StockUserData/" + x, "SaveUpdating", str(profile))
+                
+            jsonprofile = json.dumps(profile)
+            repo.create_file("StockUserData/" + x, "SaveUpdating", str(jsonprofile))
         except:
             with open("StockUserData/" +  x, "r") as path:
                 profile = json.load(path)
-            repo.create_file("StockUserData/" + x, "SaveUpdating", str(profile))
+                
+            jsonprofile = json.dumps(profile)
+            repo.create_file("StockUserData/" + x, "SaveUpdating", str(jsonprofile))
             
     backupreport = {'FilesBacked' : len(userdatalist),
                     'TimeOfSave' : str((DT.datetime.utcnow()).strftime('%Y-%m-%d %H:%M:%S'))}
