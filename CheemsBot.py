@@ -125,7 +125,7 @@ async def help(ctx):
                     "**!leaderboard** - displays the leaderboard (updated every hour)\n" +
                     "**!uptime** - displays the uptime of the bot\n" +
                     "**!backupstatus** - displays info on the last save backup")
-    embed.add_field(name="Discord Server"
+    embed.add_field(name="Discord Server",
                     value="https://discord.gg/Kn58NmcSsc")
     
     await ctx.send('<@' + str(commandauthorid) + '>', embed=embed)
