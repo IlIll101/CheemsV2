@@ -36,9 +36,25 @@ async def leaderboardupdate():
     with open("LeaderBoard", "w") as path:
         json.dump(leaderboardsave, path)
         
+@tasks.loop(seconds=21600)
+async def updatelocalfiles():
+    g = Github(os.environ['GITHUB_TOKEN'])
+    repo = g.get_repo("IlIll101/CheemsV2")
+    FileList = repo.get_contents("StockUserData")
+    
+    for x in range(len(FileList)):
+        SaveInfo = json.loads(bytes.decode(FileList[x].decoded_content))
+        with open("StockUserData/" + FileList[x].name, "w") as path:
+            json.dump(SaveInfo, path)
+            
+    embed = discord.Embed(title="Files Updated!"),
+                          color=discord.Color.from_rgb(135, 206, 235))
+        
+    await bot.get_channel(int(os.environ['BACKUP_CHANNEL_ID'])).send(embed=embed)
+    
 @tasks.loop(seconds=1800)
 async def backupsaves():
-    g = Github("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")
+    g = Github(os.environ['GITHUB_TOKEN'])
     repo = g.search_repositories("IlIll101/CheemsV2")[0]
     userdatalist = os.listdir('StockUserData/')
     for y in userdatalist:
@@ -81,6 +97,7 @@ async def on_ready():
     print("Bot is ready!")
     backupsaves.start()
     leaderboardupdate.start()
+    updatelocalfiles.start()
     await bot.change_presence(activity=discord.Game(name='Prefix is "!"'))
     
 @bot.command()
