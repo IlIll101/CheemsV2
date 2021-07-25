@@ -47,7 +47,7 @@ async def updatelocalfiles():
         with open("StockUserData/" + FileList[x].name, "w") as path:
             json.dump(SaveInfo, path)
             
-    embed = discord.Embed(title="Files Updated!"),
+    embed = discord.Embed(title="Files Updated!",
                           color=discord.Color.from_rgb(135, 206, 235))
         
     await bot.get_channel(int(os.environ['BACKUP_CHANNEL_ID'])).send(embed=embed)
