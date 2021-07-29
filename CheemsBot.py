@@ -10,7 +10,7 @@ BotToken = os.environ['DISCORD_TOKEN']
 bot = commands.AutoShardedBot(shard_count=10, command_prefix = '!', help_command=None)
 bot.launch_time = DT.datetime.utcnow()
 
-@tasks.loop(seconds=10800)
+@tasks.loop(seconds=3600)
 async def leaderboardupdate():
     userdatalist = os.listdir('StockUserData')
     networthvalues = {}
