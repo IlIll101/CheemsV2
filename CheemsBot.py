@@ -10,7 +10,7 @@ BotToken = os.environ['DISCORD_TOKEN']
 bot = commands.AutoShardedBot(shard_count=10, command_prefix = '!', help_command=None)
 bot.launch_time = DT.datetime.utcnow()
 
-@tasks.loop(seconds=3600)
+@tasks.loop(seconds=1800)
 async def leaderboardupdate():
     userdatalist = os.listdir('StockUserData')
     networthvalues = {}
@@ -36,7 +36,7 @@ async def leaderboardupdate():
     with open("LeaderBoard", "w") as path:
         json.dump(leaderboardsave, path)
         
-@tasks.loop(seconds=21600)
+@tasks.loop(hours=24)
 async def updatelocalfiles():
     g = Github(os.environ['GITHUB_TOKEN'])
     repo = g.get_repo("IlIll101/CheemsV2")
@@ -94,10 +94,10 @@ async def backupsaves():
                
 @bot.event
 async def on_ready():
+    updatelocalfiles.start()
     print("Bot is ready!")
     backupsaves.start()
     leaderboardupdate.start()
-    updatelocalfiles.start()
     await bot.change_presence(activity=discord.Game(name='Prefix is "!"'))
     
 @bot.command()
