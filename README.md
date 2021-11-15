@@ -11,3 +11,5 @@ CHEEMS V2:
 -> API used to check stocks http://theautomatic.net/yahoo_fin-documentation/
 
 -> IDK what to do with this anymore
+
+-> old source code had the bot key because smooth brain obv. but of course i changed the key!!!!
