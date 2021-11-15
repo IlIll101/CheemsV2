@@ -12,4 +12,4 @@ CHEEMS V2:
 
 -> IDK what to do with this anymore
 
--> old source code had the bot key because smooth brain obv. but of course i changed the key!!!!
+-> old source code had the bot key because smooth brain. I changed the key ok!!!!!
